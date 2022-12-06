@@ -25,9 +25,9 @@ def get_marker_position(stream: str, group_size: int) -> int:
     """
     for start in range(len(stream)):
         end = start + group_size
-        group_of_four = stream[start:end]
+        letter_group = stream[start:end]
 
-        if len(set(group_of_four)) == len(group_of_four):
+        if len(set(letter_group)) == len(letter_group):
             return end
 
 
