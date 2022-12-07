@@ -108,6 +108,16 @@ class Node:
 
         return root
 
+    def filter_dirs_by_min_size(self, min_size: int) -> List["Node"]:
+        dirs = []
+
+        for node in self.children:
+            if node.is_dir and node.total_size > min_size:
+                dirs.append(node)
+                dirs.extend(node.filter_dirs_by_min_size(min_size))
+
+        return dirs
+
 
 def calculate_total_size_of_dirs_to_delete(root: Node, max_size: int) -> int:
     """Calculates the total size of all directories with size < max_size.
@@ -126,8 +136,16 @@ def calculate_total_size_of_dirs_to_delete(root: Node, max_size: int) -> int:
     return total_size
 
 
+def find_smallest_dir_to_delete(root: Node, total_disk_space: int, space_needed: int) -> Node:
+    unused_space = total_disk_space - root.total_size
+    dir_size = space_needed - unused_space
+    print(dir_size)
+    smallest_dirs = root.filter_dirs_by_min_size(dir_size)
+    return sorted(smallest_dirs, key=lambda x: x.total_size)[0]
+
+
 if __name__ == "__main__":
     root_dir = Node.from_file("input.txt")
-
     total_size = calculate_total_size_of_dirs_to_delete(root_dir, 100000)
-    print(total_size)
+    smallest_dir = find_smallest_dir_to_delete(root_dir, 70000000, 30000000)
+    print(smallest_dir.total_size)
