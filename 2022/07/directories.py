@@ -34,10 +34,6 @@ class Node:
         if new_dir == "..":
             return self.parent
 
-        if new_dir not in self.children:
-            new_current = self.add_node(new_dir)
-            return new_current
-
         new_current = next((node for node in self.children if node.name == new_dir), None)
         return new_current
 
