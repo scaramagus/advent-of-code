@@ -16,17 +16,17 @@ class Node:
         return hash(self.name)
 
     def __str__(self) -> str:
-        if self.size:
-            return f"{self.name} {self.size}"
-
-        return self.name
+        return f"{self.name} {self.total_size}"
 
     def __repr__(self):
         return str(self)
 
+    @property
+    def is_dir(self) -> bool:
+        return bool(self.children)
+
     def add_node(self, name: str, size: int = 0) -> "Node":
         new = Node(name, parent=self, size=size)
-        print(f"Adding new node {name} to parent {self.name} ({len(self.children)} children)")
         self.children.add(new)
         return new
 
@@ -51,12 +51,18 @@ class Node:
 
             self.add_node(name, size)
 
+    @property
     def total_size(self) -> int:
-        return self.size or sum(child.size for child in self.children)
+        if self.is_dir:
+            return sum(child.total_size for child in self.children)
+
+        return self.size
 
     def to_tree(self, level: int = 0) -> str:
         indent = "  " * level
-        tree_list = [f"{indent}- {self}"]
+        char = "+" if self.is_dir else "-"
+        tree_list = [f"{indent}{char} {self}"]
+
         for child in self.children:
             tree_list.extend(child.to_tree(level + 1))
 
