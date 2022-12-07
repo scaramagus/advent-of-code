@@ -98,9 +98,29 @@ class Node:
         return root
 
 
+def calculate_total_size_of_dirs_to_delete(root: Node, max_size: int) -> int:
+    """Calculates the total size of all directories with size < max_size.
+    """
+    total_size = 0
+
+    for node in root.children:
+        if not node.is_dir:
+            continue
+
+        if node.total_size > max_size:
+            total_size += calculate_total_size_of_dirs_to_delete(node, max_size)
+        else:
+            total_size += node.total_size
+
+    return total_size
+
+
 if __name__ == "__main__":
     with open("input.txt") as f:
         content = f.read()
 
     commands = content.strip().split("\n$ ")
     root_dir = Node.from_command_list(commands)
+
+    total_size = calculate_total_size_of_dirs_to_delete(root_dir, 100000)
+    print(total_size)
