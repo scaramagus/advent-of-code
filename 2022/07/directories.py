@@ -7,6 +7,10 @@ from dataclasses import dataclass, field
 
 @dataclass
 class Node:
+    """Base Node class. Can be either a file or a directory.
+    Directories will have size = 0 and children Nodes.
+    Files will have size > 0.
+    """
     name: str
     parent: Optional["Node"] = None
     size: int = 0
@@ -23,14 +27,20 @@ class Node:
 
     @property
     def is_dir(self) -> bool:
+        """If the node has children, it is a directory.
+        """
         return bool(self.children)
 
-    def add_node(self, name: str, size: int = 0) -> "Node":
+    def add_child(self, name: str, size: int = 0) -> "Node":
+        """Adds a new child node into the current one.
+        """
         new = Node(name, parent=self, size=size)
         self.children.add(new)
         return new
 
     def change_dir(self, new_dir: str) -> "Node":
+        """Searches for the given node name in either parent or children and returns it.
+        """
         if new_dir == "..":
             return self.parent
 
@@ -45,14 +55,17 @@ class Node:
             elif node_type == "dir":
                 size = 0
 
-            self.add_node(name, size)
+            self.add_child(name, size)
 
     @property
     def total_size(self) -> int:
-        if self.is_dir:
-            return sum(child.total_size for child in self.children)
+        """Calculates total size of node. For directories this is the sum
+        of the total_size of its children. For files it is the size attribute.
+        """
+        if not self.is_dir:
+            return self.size
 
-        return self.size
+        return sum(child.total_size for child in self.children)
 
     def to_tree(self, level: int = 0) -> str:
         indent = "  " * level
@@ -91,4 +104,3 @@ if __name__ == "__main__":
 
     commands = content.strip().split("\n$ ")
     root_dir = Node.from_command_list(commands)
-    print("\n".join(root_dir.to_tree()))
