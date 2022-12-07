@@ -1,6 +1,5 @@
 """Solution for adventofcode.com/2022/day/07
 """
-import ipdb
 from typing import Optional, List, Set
 
 from dataclasses import dataclass, field
@@ -16,11 +15,18 @@ class Node:
     def __hash__(self):
         return hash(self.name)
 
-    def __str__(self):
-        return f"{self.name} {self.size}"
+    def __str__(self) -> str:
+        if self.size:
+            return f"{self.name} {self.size}"
+
+        return self.name
+
+    def __repr__(self):
+        return str(self)
 
     def add_node(self, name: str, size: int = 0) -> "Node":
         new = Node(name, parent=self, size=size)
+        print(f"Adding new node {name} to parent {self.name} ({len(self.children)} children)")
         self.children.add(new)
         return new
 
@@ -51,8 +57,8 @@ class Node:
     def to_tree(self, level: int = 0) -> str:
         indent = "  " * level
         tree_list = [f"{indent}- {self}"]
-        for i, child in enumerate(self.children):
-            tree_list.extend(child.to_tree(i + 1))
+        for child in self.children:
+            tree_list.extend(child.to_tree(level + 1))
 
         return tree_list
 
