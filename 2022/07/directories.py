@@ -25,6 +25,9 @@ class Node:
     def __repr__(self):
         return str(self)
 
+    def __getitem__(self, key):
+        return next((node for node in self.children if node.name == key), None)
+
     @property
     def is_dir(self) -> bool:
         """If the node has children, it is a directory.
@@ -44,8 +47,7 @@ class Node:
         if new_dir == "..":
             return self.parent
 
-        new_current = next((node for node in self.children if node.name == new_dir), None)
-        return new_current
+        return self[new_dir]
 
     def list(self, output: List[List[str]]):
         for line in output:
@@ -67,20 +69,29 @@ class Node:
 
         return sum(child.total_size for child in self.children)
 
-    def to_tree(self, level: int = 0) -> str:
+    def _build_tree(self, level: int = 0) -> List[str]:
         indent = "  " * level
         char = "+" if self.is_dir else "-"
         tree_list = [f"{indent}{char} {self}"]
 
         for child in self.children:
-            tree_list.extend(child.to_tree(level + 1))
+            tree_list.extend(child._build_tree(level + 1))
 
         return tree_list
 
+    def to_tree(self) -> str:
+        tree_list = self._build_tree()
+        print("\n".join(tree_list))
+
     @classmethod
-    def from_command_list(cls, commands: List[str]) -> "Node":
+    def from_file(cls, file_name: str) -> "Node":
         """Traverses a list of commands and assembles a node tree.
         """
+        with open(file_name) as f:
+            content = f.read()
+
+        commands = content.strip().split("\n$ ")
+
         root = current = cls("/")
 
         for command in commands[1:]:
@@ -105,22 +116,18 @@ def calculate_total_size_of_dirs_to_delete(root: Node, max_size: int) -> int:
 
     for node in root.children:
         if not node.is_dir:
-            continue
+           continue
 
-        if node.total_size > max_size:
-            total_size += calculate_total_size_of_dirs_to_delete(node, max_size)
-        else:
+        if node.total_size < max_size:
             total_size += node.total_size
+
+        total_size += calculate_total_size_of_dirs_to_delete(node, max_size)
 
     return total_size
 
 
 if __name__ == "__main__":
-    with open("input.txt") as f:
-        content = f.read()
-
-    commands = content.strip().split("\n$ ")
-    root_dir = Node.from_command_list(commands)
+    root_dir = Node.from_file("input.txt")
 
     total_size = calculate_total_size_of_dirs_to_delete(root_dir, 100000)
     print(total_size)
