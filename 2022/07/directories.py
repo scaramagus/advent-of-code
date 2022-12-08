@@ -19,12 +19,6 @@ class Node:
     def __hash__(self):
         return hash(self.name)
 
-    def __str__(self) -> str:
-        return f"{self.name} {self.total_size}"
-
-    def __repr__(self):
-        return str(self)
-
     def __getitem__(self, key):
         return next((node for node in self.children if node.name == key), None)
 
@@ -32,7 +26,7 @@ class Node:
     def is_dir(self) -> bool:
         """If the node has children, it is a directory.
         """
-        return bool(self.children)
+        return bool(self.children) and self.size == 0
 
     def add_child(self, name: str, size: int = 0) -> "Node":
         """Adds a new child node into the current one.
@@ -68,20 +62,6 @@ class Node:
             return self.size
 
         return sum(child.total_size for child in self.children)
-
-    def _build_tree(self, level: int = 0) -> List[str]:
-        indent = "  " * level
-        char = "+" if self.is_dir else "-"
-        tree_list = [f"{indent}{char} {self}"]
-
-        for child in self.children:
-            tree_list.extend(child._build_tree(level + 1))
-
-        return tree_list
-
-    def to_tree(self) -> str:
-        tree_list = self._build_tree()
-        print("\n".join(tree_list))
 
     @classmethod
     def from_file(cls, file_name: str) -> "Node":
@@ -139,13 +119,15 @@ def calculate_total_size_of_dirs_to_delete(root: Node, max_size: int) -> int:
 def find_smallest_dir_to_delete(root: Node, total_disk_space: int, space_needed: int) -> Node:
     unused_space = total_disk_space - root.total_size
     dir_size = space_needed - unused_space
-    print(dir_size)
     smallest_dirs = root.filter_dirs_by_min_size(dir_size)
     return sorted(smallest_dirs, key=lambda x: x.total_size)[0]
 
 
 if __name__ == "__main__":
     root_dir = Node.from_file("input.txt")
+
     total_size = calculate_total_size_of_dirs_to_delete(root_dir, 100000)
+    print("Solution to Part 1: ", total_size)
+
     smallest_dir = find_smallest_dir_to_delete(root_dir, 70000000, 30000000)
-    print(smallest_dir.total_size)
+    print("Solution to Part 2: ", smallest_dir.total_size)
